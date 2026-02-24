@@ -212,8 +212,7 @@
       </table>
 
       <div class="small">
-        Note: The advantage index, defined as $1- (A\sin \theta)/(A \sin \theta + d^2)$, provides a scale from 0 to 1 of the difficulty navigating the surgical corridor based on skull flap area $A$, working angle $\theta$, and surgical depth $d$.
-
+        Note: The advantage index, defined as $(A\sin \theta)/(A \sin \theta + d^2)$, quantifies the relative ease of navigating the surgical corridor on a normalized scale ranging from 0 to 1. In this formulation, values approaching 1 indicate more favorable (easier) surgical access, whereas values approaching 0 indicate more constrained (more difficult) navigation. The index incorporates skull flap area $A$, working angle $\theta$, and surgical depth $d$, thereby integrating geometric exposure and operative reach into a single dimensionless parameter.
       </div>
     </div>
 
@@ -531,7 +530,7 @@
 
     // AdIdx
     const sinTheta = Math.sin(angleRad);
-    const adIdx =   1-(areaFlap * sinTheta) / (areaFlap * sinTheta + depthMm*depthMm); //(depthMm <= 1e-9) ? NaN : (areaFlap * sinTheta) / (depthMm*depthMm);
+    const adIdx =   (areaFlap * sinTheta) / (areaFlap * sinTheta + depthMm*depthMm); //(depthMm <= 1e-9) ? NaN : (areaFlap * sinTheta) / (depthMm*depthMm);
 
     // Update results
     document.getElementById("resArea").textContent = `${fmt(areaFlap,2)} mm²`;
