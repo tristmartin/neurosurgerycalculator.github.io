@@ -636,7 +636,7 @@
 
     Plotly.newPlot("plot", traces, layout, { displayModeBar: true, responsive: true });
 
-    document.getElementById("plotCaption").textContent = `Area=${fmt(areaFlap,1)} mm² • Depth=${fmt(depthMm,1)} mm • Vol=${fmt(volumeMm3,1)} mm³ • Angle=${fmt(angleDeg,1)}° • Ω=${fmt(omegaSr,4)} sr • AdIdx=${fmt(adIdx,3)}`;
+    document.getElementById("plotCaption").textContent = `A=${fmt(areaFlap,1)} mm² • d=${fmt(depthMm,1)} mm • V=${fmt(volumeMm3,1)} mm³ • θ=${fmt(angleDeg,1)}° • Ω=${fmt(omegaSr,4)} sr • AdIdx=${fmt(adIdx,3)}`;
   }
 
   // Buttons
