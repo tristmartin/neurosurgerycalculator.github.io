@@ -520,7 +520,7 @@
     const angleDeg = angleRad * 180/Math.PI;
 
     // Depth: |dot(tip - mean, normal)|
-    const depthMm = Math.abs(dot(sub(tip, flapMean), normalNorm));
+    const depthMm = norm(sub(flapMean, tip));
 
     // Corridor volume (mm^3): pyramid volume = (Area * height) / 3
     const volumeMm3 = (areaFlap * depthMm) / 3.0;
