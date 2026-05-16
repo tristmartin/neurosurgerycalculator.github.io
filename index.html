@@ -8,24 +8,20 @@
   <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
   <link rel="shortcut icon" href="./favicon.ico">
-  
-  <!-- Plotly for interactive 3D -->
-  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
 
-    <script type="text/x-mathjax-config">
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+  <script src="https://unpkg.com/dicom-parser@1.8.21/dist/dicomParser.min.js"></script>
+
+  <script type="text/x-mathjax-config">
     MathJax.Hub.Config({
       jax: ["input/TeX", "output/HTML-CSS"],
       extensions: ["tex2jax.js"],
       "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] },
-      tex2jax: { inlineMath: [ ["$", "$"], ["\\(","\\)"] ], displayMath: [ ["$$","$$"], ["\\[", "\\]"] ], processEscapes: true, ignoreClass: "tex2jax_ignore|dno" },
-      TeX: { noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } } },
+      tex2jax: { inlineMath: [["$", "$"], ["\\(","\\)"]], displayMath: [["$$","$$"], ["\\[", "\\]"]], processEscapes: true },
       messageStyle: "none"
     });
-    </script>    
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
-
-
-  <!-- ml-matrix for PCA eigen decomposition -->
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"></script>
 
   <style>
     :root {
@@ -36,167 +32,113 @@
       --accent: #7dd3fc;
       --border: rgba(255,255,255,0.08);
       --danger: #fb7185;
+      --ok: #86efac;
+      --warn: #fde68a;
     }
     body {
       margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       background: radial-gradient(1200px 600px at 20% -10%, rgba(125,211,252,0.18), transparent 60%),
                   radial-gradient(900px 500px at 80% 10%, rgba(167,139,250,0.12), transparent 55%),
                   var(--bg);
       color: var(--text);
     }
-    .wrap {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 16px;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-    @media (min-width: 980px) {
-      .wrap { grid-template-columns: 420px 1fr; gap: 16px; align-items: start; }
-    }
-    .card {
-      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-      backdrop-filter: blur(6px);
-    }
-    h1 {
-      font-size: 18px;
-      margin: 0 0 10px;
-      letter-spacing: 0.2px;
-    }
-    .sub {
-      margin: 0 0 12px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.35;
-    }
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 16px; display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 1040px) { .wrap { grid-template-columns: 470px 1fr; gap: 16px; align-items: start; } }
+    .card { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); border: 1px solid var(--border); border-radius: 18px; padding: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); backdrop-filter: blur(6px); }
+    h1 { font-size: 18px; margin: 0 0 10px; letter-spacing: 0.2px; }
+    h2 { font-size: 14px; margin: 12px 0 4px; }
+    .sub, .small { color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .sub { margin: 0 0 12px; font-size: 13px; }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .tabBtn.active { border-color: rgba(125,211,252,0.65); background: rgba(125,211,252,0.18); }
+    .tabPanel { display: none; }
+    .tabPanel.active { display: block; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-    label {
-      display: block;
-      font-size: 12px;
-      color: var(--muted);
-      margin: 10px 0 6px;
-    }
-    input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 10px 10px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: rgba(0,0,0,0.25);
-      color: var(--text);
-      outline: none;
-      font-size: 14px;
-    }
-    input:focus { border-color: rgba(125,211,252,0.55); }
-    .btns {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-    button {
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: rgba(125,211,252,0.12);
-      color: var(--text);
-      padding: 11px 12px;
-      border-radius: 14px;
-      font-weight: 600;
-      font-size: 14px;
-    }
+    label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 6px; }
+    input, select { width: 100%; box-sizing: border-box; padding: 10px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.25); color: var(--text); outline: none; font-size: 14px; }
+    input:focus, select:focus { border-color: rgba(125,211,252,0.55); }
+    input[type="file"] { padding: 9px; }
+    input[type="range"] { padding: 0; }
+    .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    button { cursor: pointer; border: 1px solid var(--border); background: rgba(125,211,252,0.12); color: var(--text); padding: 11px 12px; border-radius: 14px; font-weight: 600; font-size: 14px; }
     button.secondary { background: rgba(255,255,255,0.04); }
     button.danger { background: rgba(251,113,133,0.12); }
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-      overflow: hidden;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-    }
-    .table td, .table th {
-      padding: 10px 10px;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
+    button.activeMode { border-color: rgba(125,211,252,0.85); box-shadow: 0 0 0 2px rgba(125,211,252,0.14) inset; }
+    .table { width: 100%; border-collapse: collapse; margin-top: 12px; border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
+    .table td, .table th { padding: 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
     .table th { text-align: left; color: var(--muted); font-weight: 600; }
     .table tr:last-child td { border-bottom: none; }
-    .pill {
-      display: inline-block;
-      font-size: 12px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      margin-left: 8px;
-      transform: translateY(-1px);
-    }
-    .error {
-      margin-top: 10px;
-      color: var(--danger);
-      font-size: 13px;
-      line-height: 1.35;
-      white-space: pre-wrap;
-    }
-    .plot {
-      height: min(72vh, 700px);
-      width: 100%;
-    }
-    .small {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.35;
-    }
-    .vertexRow {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr 40px;
-      gap: 8px;
-      align-items: center;
-      margin-top: 8px;
-    }
-    .xbtn {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      background: rgba(251,113,133,0.10);
-    }
+    .pill { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); margin-left: 6px; }
+    .error { margin-top: 10px; color: var(--danger); font-size: 13px; line-height: 1.35; white-space: pre-wrap; }
+    .ok { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .plot { height: min(72vh, 700px); width: 100%; }
+    .vertexRow, .pointRow { display: grid; grid-template-columns: 1fr 1fr 1fr 40px; gap: 8px; align-items: center; margin-top: 8px; }
+    .pointRow { grid-template-columns: 64px 1fr 1fr 1fr 40px; }
+    .xbtn { width: 40px; height: 40px; border-radius: 12px; background: rgba(251,113,133,0.10); padding: 0; }
+    #dicomCanvas { width: 100%; max-height: 62vh; background: black; border: 1px solid var(--border); border-radius: 14px; touch-action: none; display: block; }
+    .viewerGrid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 1040px) { .viewerGrid { grid-template-columns: minmax(0,1fr) 250px; } }
+    .statusBox { border: 1px solid var(--border); border-radius: 14px; padding: 10px; background: rgba(0,0,0,0.18); }
+    code { color: var(--accent); }
   </style>
 </head>
 
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>Neurosurgical Operative Freedom Calculator <!--<span class="pill">mobile-ready</span></h1>-->
-      <p class="sub">
-        Inputs: <b>corridor tip</b> + <b>skull flap vertices</b> (≥ 3). Computes flap area, working angle, surgical
-        depth, corridor volume, solid angle, and advantage index.
-      </p>
+      <h1>Neurosurgical Operative Freedom Calculator</h1>
+      <p class="sub">Use manual coordinates or upload a local DICOM folder, click the tip and skull flap vertices, then compute the same operative freedom metrics.</p>
 
-      <label>Tip point (mm)</label>
-      <div class="row3">
-        <input id="tipX" type="number" step="0.01" placeholder="x">
-        <input id="tipY" type="number" step="0.01" placeholder="y">
-        <input id="tipZ" type="number" step="0.01" placeholder="z">
+      <div class="tabs">
+        <button class="tabBtn active" data-tab="manualPanel">Manual coordinates</button>
+        <button class="tabBtn" data-tab="dicomPanel">DICOM point selection</button>
       </div>
 
-      <label>Flap vertices (mm)</label>
-      <div id="vertices"></div>
+      <div id="manualPanel" class="tabPanel active">
+        <label>Tip point (mm)</label>
+        <div class="row3">
+          <input id="tipX" type="number" step="0.01" placeholder="x">
+          <input id="tipY" type="number" step="0.01" placeholder="y">
+          <input id="tipZ" type="number" step="0.01" placeholder="z">
+        </div>
 
-      <div class="btns">
-        <button id="addVertex" class="secondary">+ Add vertex</button>
-        <button id="calcBtn">Compute</button>
+        <label>Flap vertices (mm)</label>
+        <div id="vertices"></div>
+
+        <div class="btns">
+          <button id="addVertex" class="secondary">+ Add vertex</button>
+          <button id="calcBtn">Compute</button>
+        </div>
+        <div class="btns">
+          <button id="loadP2" class="secondary">Load sample</button>
+          <button id="clearBtn" class="danger">Clear</button>
+        </div>
       </div>
-      <div class="btns">
-        <button id="loadP2" class="secondary">Load sample</button>
-        <button id="clearBtn" class="danger">Clear</button>
+
+      <div id="dicomPanel" class="tabPanel">
+        <label>Upload DICOM folder</label>
+        <input id="dicomFolder" type="file" webkitdirectory directory multiple>
+        <div class="small">Files stay in the browser. This prototype supports uncompressed, single-frame grayscale DICOM series.</div>
+
+        <label>Slice</label>
+        <input id="sliceSlider" type="range" min="0" max="0" value="0" disabled>
+        <div class="small" id="sliceInfo">No DICOM loaded.</div>
+
+        <label>Click mode</label>
+        <div class="btns">
+          <button id="modeTip" class="secondary activeMode">Set tip</button>
+          <button id="modeFlap" class="secondary">Add flap vertex</button>
+        </div>
+        <div class="btns">
+          <button id="sendDicomPoints">Send points to calculator</button>
+          <button id="clearDicomPoints" class="danger">Clear DICOM points</button>
+        </div>
+
+        <h2>Selected DICOM points</h2>
+        <div id="dicomPointList" class="small">No points selected.</div>
       </div>
 
       <div id="error" class="error"></div>
@@ -204,7 +146,7 @@
       <table class="table" id="resultsTable" style="display:none">
         <tr><th>Metric</th><th>Value</th></tr>
         <tr><td>Flap base area $A$</td><td id="resArea">—</td></tr>
-        <tr><td>Angle $\theta$ (tip → skull flap) </td><td id="resAngle">—</td></tr>
+        <tr><td>Angle $\theta$ (tip → skull flap)</td><td id="resAngle">—</td></tr>
         <tr><td>Depth of surgical freedom $d$</td><td id="resDepth">—</td></tr>
         <tr><td>Corridor volume $V$</td><td id="resVol">—</td></tr>
         <tr><td>Solid angle Ω</td><td id="resOmega">—</td></tr>
@@ -213,480 +155,280 @@
       </table>
 
       <div class="small">
-        Note: The advantage index, defined as $(A\sin \theta)/(A \sin \theta + d^2)$, quantifies the relative ease of navigating the surgical corridor on a scale ranging from 0 to 1. Values approaching 1 indicate more favorable surgical access, whereas values approaching 0 indicate more constrained navigation. 
+        Note: The advantage index is defined as $(A\sin\theta)/(A\sin\theta+d^2)$. Values closer to 1 indicate more favorable access; values closer to 0 indicate more constrained navigation.
       </div>
     </div>
 
     <div class="card">
-      <h1>3D Visualization</h1>
-      <div id="plot" class="plot"></div>
-      <div class="small" id="plotCaption"></div>
+      <h1>Visualization</h1>
+      <div class="viewerGrid">
+        <div>
+          <canvas id="dicomCanvas" style="display:none"></canvas>
+          <div id="plot" class="plot"></div>
+          <div class="small" id="plotCaption"></div>
+        </div>
+        <div class="statusBox">
+          <b>DICOM status</b>
+          <div class="small" id="dicomStatus">Upload a DICOM folder to activate image-based point selection.</div>
+          <hr style="border-color:var(--border); border-width:0 0 1px; margin:12px 0;">
+          <div class="small">
+            Tip: select the target/depth point first, then switch to flap vertex mode and click ≥3 skull flap points. The selected coordinates are converted to patient-space mm when DICOM orientation metadata is available.
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
 <script>
   const V = (x,y,z) => [x,y,z];
-
   function dot(a,b){ return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]; }
   function sub(a,b){ return [a[0]-b[0], a[1]-b[1], a[2]-b[2]]; }
-  function add(a,b){ return [a[0]+b[0], a[1]+b[1], a[2]+b[2]]; }
-  function mul(a,s){ return [a[0]*s, a[1]*s, a[2]*s]; }
-  function cross(a,b){
-    return [
-      a[1]*b[2]-a[2]*b[1],
-      a[2]*b[0]-a[0]*b[2],
-      a[0]*b[1]-a[1]*b[0],
-    ];
-  }
+  function mul(a,s){ return [a[0]*s,a[1]*s,a[2]*s]; }
+  function cross(a,b){ return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]; }
   function norm(a){ return Math.hypot(a[0],a[1],a[2]); }
-  function unit(a){
-    const n = norm(a);
-    return (n < 1e-12) ? [0,0,0] : [a[0]/n,a[1]/n,a[2]/n];
-  }
+  function unit(a){ const n=norm(a); return n<1e-12 ? [0,0,0] : [a[0]/n,a[1]/n,a[2]/n]; }
+  function fmt(x,digits=3){ if(!isFinite(x)) return "NaN"; const abs=Math.abs(x); if(abs!==0&&(abs<1e-3||abs>=1e4)) return x.toExponential(3); return x.toFixed(digits); }
+  function showError(msg){ document.getElementById("error").textContent = msg || ""; }
+  function setResultsVisible(on){ document.getElementById("resultsTable").style.display = on ? "" : "none"; }
 
-  function fmt(x, digits=3){
-    if (!isFinite(x)) return "NaN";
-    const abs = Math.abs(x);
-    if (abs !== 0 && (abs < 1e-3 || abs >= 1e4)) return x.toExponential(3);
-    return x.toFixed(digits);
-  }
-
-  // 2D convex hull (Monotonic chain) for points [[x,y], ...]
   function convexHull2D(points){
-    if (points.length <= 1) return points.map((p,i)=>({p,i}));
-    const pts = points.map((p,i)=>({p,i}));
-    pts.sort((a,b)=> a.p[0]===b.p[0] ? a.p[1]-b.p[1] : a.p[0]-b.p[0]);
-
-    const cross2 = (o,a,b) => (a.p[0]-o.p[0])*(b.p[1]-o.p[1]) - (a.p[1]-o.p[1])*(b.p[0]-o.p[0]);
-
-    const lower = [];
-    for (const pt of pts){
-      while (lower.length >= 2 && cross2(lower[lower.length-2], lower[lower.length-1], pt) <= 0) lower.pop();
-      lower.push(pt);
-    }
-    const upper = [];
-    for (let k=pts.length-1; k>=0; k--){
-      const pt = pts[k];
-      while (upper.length >= 2 && cross2(upper[upper.length-2], upper[upper.length-1], pt) <= 0) upper.pop();
-      upper.push(pt);
-    }
-    upper.pop(); lower.pop();
-    const hull = lower.concat(upper); // CCW
-    return hull;
+    if(points.length<=1) return points.map((p,i)=>({p,i}));
+    const pts=points.map((p,i)=>({p,i})).sort((a,b)=>a.p[0]===b.p[0]?a.p[1]-b.p[1]:a.p[0]-b.p[0]);
+    const cross2=(o,a,b)=>(a.p[0]-o.p[0])*(b.p[1]-o.p[1])-(a.p[1]-o.p[1])*(b.p[0]-o.p[0]);
+    const lower=[]; for(const pt of pts){ while(lower.length>=2 && cross2(lower[lower.length-2],lower[lower.length-1],pt)<=0) lower.pop(); lower.push(pt); }
+    const upper=[]; for(let k=pts.length-1;k>=0;k--){ const pt=pts[k]; while(upper.length>=2 && cross2(upper[upper.length-2],upper[upper.length-1],pt)<=0) upper.pop(); upper.push(pt); }
+    upper.pop(); lower.pop(); return lower.concat(upper);
   }
+  function polygonArea2D(poly){ let A=0; for(let i=0;i<poly.length;i++){ const j=(i+1)%poly.length; A+=poly[i][0]*poly[j][1]-poly[j][0]*poly[i][1]; } return Math.abs(A)/2; }
+  function triangleSolidAngle(a,b,c){ const numerator=dot(a,cross(b,c)); const na=norm(a),nb=norm(b),nc=norm(c); const denom=na*nb*nc+dot(a,b)*nc+dot(b,c)*na+dot(c,a)*nb; return 2*Math.atan2(numerator,denom); }
+  function polygonSolidAngle(polygonPts,tipPt){ const R=polygonPts.map(p=>sub(p,tipPt)); if(R.length<3) return 0; let total=0; for(let i=1;i<R.length-1;i++) total+=triangleSolidAngle(R[0],R[i],R[i+1]); return Math.abs(total); }
 
-  // Polygon area in 2D (CCW), points [[x,y],...]
-  function polygonArea2D(poly){
-    if (poly.length < 3) return 0;
-    let A = 0;
-    for (let i=0; i<poly.length; i++){
-      const j = (i+1)%poly.length;
-      A += poly[i][0]*poly[j][1] - poly[j][0]*poly[i][1];
-    }
-    return Math.abs(A)/2;
-  }
-
-  // Triangle solid angle (same formula as your Python)
-  function triangleSolidAngle(a,b,c){
-    const bc = cross(b,c);
-    const numerator = dot(a, bc);
-    const na = norm(a), nb = norm(b), nc = norm(c);
-    const denom = na*nb*nc + dot(a,b)*nc + dot(b,c)*na + dot(c,a)*nb;
-    return 2.0 * Math.atan2(numerator, denom);
-  }
-
-  function polygonSolidAngle(polygonPts, tipPt){
-    const R = polygonPts.map(p => sub(p, tipPt));
-    const N = R.length;
-    if (N < 3) return 0;
-    const r0 = R[0];
-    let total = 0;
-    for (let i=1; i<N-1; i++){
-      total += triangleSolidAngle(r0, R[i], R[i+1]);
-    }
-    return total;
-  }
-
-  // PCA plane from flap points: returns {mean, normal, u, v}
-  // --- Eigen decomposition for symmetric 3x3 (no dependencies) ---
-  function eigenSymmetric3x3(A) {
-    // A is [[a,b,c],[b,d,e],[c,e,f]]
-    const a = A[0][0], b = A[0][1], c = A[0][2];
-    const d = A[1][1], e = A[1][2];
-    const f = A[2][2];
-
-    // If A is (near) diagonal, eigenvectors are axis-aligned
-    const p1 = b*b + c*c + e*e;
-    if (p1 < 1e-16) {
-      return {
-        values: [a, d, f],
-        vectors: [[1,0,0],[0,1,0],[0,0,1]] // columns conceptually
-      };
-    }
-
-    // Compute eigenvalues via analytic method (see e.g., "Eigenvalues of a real symmetric 3x3 matrix")
-    const trace = (a + d + f);
-    const q = trace / 3.0;
-
-    const a11 = a - q, a22 = d - q, a33 = f - q;
-    const p2 = a11*a11 + a22*a22 + a33*a33 + 2*p1;
-    const p = Math.sqrt(p2 / 6.0);
-
-    // B = (1/p) * (A - qI)
-    const B = [
-      [a11/p, b/p,   c/p],
-      [b/p,   a22/p, e/p],
-      [c/p,   e/p,   a33/p]
-    ];
-
-    // det(B)/2 in [-1,1]
-    const detB =
-        B[0][0]*(B[1][1]*B[2][2] - B[1][2]*B[2][1])
-      - B[0][1]*(B[1][0]*B[2][2] - B[1][2]*B[2][0])
-      + B[0][2]*(B[1][0]*B[2][1] - B[1][1]*B[2][0]);
-
-    let r = detB / 2.0;
-    r = Math.max(-1, Math.min(1, r));
-
-    const phi = Math.acos(r) / 3.0;
-
-    const eig1 = q + 2*p*Math.cos(phi);
-    const eig3 = q + 2*p*Math.cos(phi + (2*Math.PI/3));
-    const eig2 = 3*q - eig1 - eig3;
-
-    // Now compute eigenvectors with a nullspace solve of (A - λI)v = 0
+  function eigenSymmetric3x3(A){
+    const a=A[0][0],b=A[0][1],c=A[0][2],d=A[1][1],e=A[1][2],f=A[2][2];
+    const p1=b*b+c*c+e*e;
+    if(p1<1e-16) return {values:[a,d,f],vectors:[[1,0,0],[0,1,0],[0,0,1]]};
+    const q=(a+d+f)/3, a11=a-q,a22=d-q,a33=f-q;
+    const p=Math.sqrt((a11*a11+a22*a22+a33*a33+2*p1)/6);
+    const B=[[a11/p,b/p,c/p],[b/p,a22/p,e/p],[c/p,e/p,a33/p]];
+    const detB=B[0][0]*(B[1][1]*B[2][2]-B[1][2]*B[2][1])-B[0][1]*(B[1][0]*B[2][2]-B[1][2]*B[2][0])+B[0][2]*(B[1][0]*B[2][1]-B[1][1]*B[2][0]);
+    const r=Math.max(-1,Math.min(1,detB/2));
+    const phi=Math.acos(r)/3;
+    const eig1=q+2*p*Math.cos(phi), eig3=q+2*p*Math.cos(phi+2*Math.PI/3), eig2=3*q-eig1-eig3;
     function eigenVectorFor(lambda){
-      const M = [
-        [A[0][0]-lambda, A[0][1],       A[0][2]],
-        [A[1][0],        A[1][1]-lambda, A[1][2]],
-        [A[2][0],        A[2][1],       A[2][2]-lambda]
-      ];
-
-      // Take cross product of two rows with largest norms for stability
-      const r0 = M[0], r1 = M[1], r2 = M[2];
-      const n0 = dot(r0,r0), n1 = dot(r1,r1), n2 = dot(r2,r2);
-      let v;
-      if (n0 >= n1 && n0 >= n2) {
-        v = (n1 >= n2) ? cross(r0,r1) : cross(r0,r2);
-      } else if (n1 >= n0 && n1 >= n2) {
-        v = (n0 >= n2) ? cross(r1,r0) : cross(r1,r2);
-      } else {
-        v = (n0 >= n1) ? cross(r2,r0) : cross(r2,r1);
-      }
-      const nv = norm(v);
-      if (nv < 1e-12) {
-        // Fallback: try another pair
-        v = cross(r0, r1);
-        if (norm(v) < 1e-12) v = cross(r0, r2);
-        if (norm(v) < 1e-12) v = cross(r1, r2);
-      }
-      return unit(v);
+      const M=[[A[0][0]-lambda,A[0][1],A[0][2]],[A[1][0],A[1][1]-lambda,A[1][2]],[A[2][0],A[2][1],A[2][2]-lambda]];
+      const pairs=[[M[0],M[1]],[M[0],M[2]],[M[1],M[2]]];
+      let best=[1,0,0], bestN=0;
+      for(const [r1,r2] of pairs){ const v=cross(r1,r2), n=norm(v); if(n>bestN){best=v; bestN=n;} }
+      return unit(best);
     }
-
-    const v1 = eigenVectorFor(eig1);
-    const v2 = eigenVectorFor(eig2);
-    const v3 = eigenVectorFor(eig3);
-
-    // Return vectors as columns conceptually; we’ll just return as array [v1,v2,v3]
-    return { values: [eig1, eig2, eig3], vectors: [v1, v2, v3] };
+    return {values:[eig1,eig2,eig3],vectors:[eigenVectorFor(eig1),eigenVectorFor(eig2),eigenVectorFor(eig3)]};
   }
-
-  // PCA plane from flap points: returns {mean, normal, u, v}
   function pcaPlane(flap){
-    const mean = [0,0,0];
-    for (const p of flap){ mean[0]+=p[0]; mean[1]+=p[1]; mean[2]+=p[2]; }
-    mean[0]/=flap.length; mean[1]/=flap.length; mean[2]/=flap.length;
-
-    // C = X^T X
-    let C = [[0,0,0],[0,0,0],[0,0,0]];
-    for (const p of flap){
-      const x = sub(p, mean);
-      for (let i=0;i<3;i++){
-        for (let j=0;j<3;j++){
-          C[i][j] += x[i]*x[j];
-        }
-      }
-    }
-
-    const { values, vectors } = eigenSymmetric3x3(C);
-
-    // sort by eigenvalue asc
-    const idx = [0,1,2].sort((i,j)=>values[i]-values[j]);
-
-    const normal = unit(vectors[idx[0]]); // smallest eigenvalue
-    const u = unit(vectors[idx[1]]);
-    let v = unit(vectors[idx[2]]);
-
-    // Make (u,v,normal) right-handed (optional, but makes orientation consistent)
-    if (dot(cross(u,v), normal) < 0) v = mul(v, -1);
-
-    return { mean, normal, u, v };
+    const mean=[0,0,0]; for(const p of flap){ mean[0]+=p[0]; mean[1]+=p[1]; mean[2]+=p[2]; } mean[0]/=flap.length; mean[1]/=flap.length; mean[2]/=flap.length;
+    const C=[[0,0,0],[0,0,0],[0,0,0]]; for(const p of flap){ const x=sub(p,mean); for(let i=0;i<3;i++) for(let j=0;j<3;j++) C[i][j]+=x[i]*x[j]; }
+    const {values,vectors}=eigenSymmetric3x3(C); const idx=[0,1,2].sort((i,j)=>values[i]-values[j]);
+    const normal=unit(vectors[idx[0]]), u=unit(vectors[idx[1]]); let v=unit(vectors[idx[2]]); if(dot(cross(u,v),normal)<0) v=mul(v,-1);
+    return {mean,normal,u,v};
   }
 
-  // UI: vertices list
-  const verticesDiv = document.getElementById("vertices");
+  const verticesDiv=document.getElementById("vertices");
   function addVertexRow(x="",y="",z=""){
-    const row = document.createElement("div");
-    row.className = "vertexRow";
-    row.innerHTML = `
-      <input type="number" step="0.01" placeholder="x" value="${x}">
-      <input type="number" step="0.01" placeholder="y" value="${y}">
-      <input type="number" step="0.01" placeholder="z" value="${z}">
-      <button class="xbtn" title="Remove">✕</button>
-    `;
-    row.querySelector("button").onclick = () => {
-      if (verticesDiv.children.length <= 3) {
-        showError("Need at least 3 flap vertices.");
-        return;
-      }
-      row.remove();
-    };
+    const row=document.createElement("div"); row.className="vertexRow";
+    row.innerHTML=`<input type="number" step="0.01" placeholder="x" value="${x}"><input type="number" step="0.01" placeholder="y" value="${y}"><input type="number" step="0.01" placeholder="z" value="${z}"><button class="xbtn" title="Remove">✕</button>`;
+    row.querySelector("button").onclick=()=>{ if(verticesDiv.children.length<=3){ showError("Need at least 3 flap vertices."); return; } row.remove(); };
     verticesDiv.appendChild(row);
   }
-
   function getInputs(){
-    const tip = [
-      parseFloat(document.getElementById("tipX").value),
-      parseFloat(document.getElementById("tipY").value),
-      parseFloat(document.getElementById("tipZ").value),
-    ];
-    const flap = [];
-    for (const row of verticesDiv.children){
-      const ins = row.querySelectorAll("input");
-      const x = parseFloat(ins[0].value);
-      const y = parseFloat(ins[1].value);
-      const z = parseFloat(ins[2].value);
-      flap.push([x,y,z]);
-    }
-    return { tip, flap };
+    const tip=[parseFloat(tipX.value),parseFloat(tipY.value),parseFloat(tipZ.value)];
+    const flap=[]; for(const row of verticesDiv.children){ const ins=row.querySelectorAll("input"); flap.push([parseFloat(ins[0].value),parseFloat(ins[1].value),parseFloat(ins[2].value)]); }
+    return {tip,flap};
   }
-
-  function validate({tip, flap}){
-    if (flap.length < 3) return "Need at least 3 flap vertices.";
-    if (tip.some(v=>!isFinite(v))) return "Tip coordinates must be valid numbers.";
-    for (let i=0;i<flap.length;i++){
-      if (flap[i].some(v=>!isFinite(v))) return `Flap vertex #${i+1} has invalid values.`;
-    }
-    return null;
-  }
-
-  function showError(msg){
-    document.getElementById("error").textContent = msg || "";
-  }
-
-  function setResultsVisible(on){
-    document.getElementById("resultsTable").style.display = on ? "" : "none";
-  }
+  function validate({tip,flap}){ if(flap.length<3) return "Need at least 3 flap vertices."; if(tip.some(v=>!isFinite(v))) return "Tip coordinates must be valid numbers."; for(let i=0;i<flap.length;i++) if(flap[i].some(v=>!isFinite(v))) return `Flap vertex #${i+1} has invalid values.`; return null; }
 
   function compute(){
-    showError("");
-    const data = getInputs();
-    const err = validate(data);
-    if (err) { setResultsVisible(false); showError(err); return; }
-
-    const { tip, flap } = data;
-
-    // PCA plane
-    const { mean: flapMean, normal, u, v } = pcaPlane(flap);
-
-    // Project 3D points onto PCA plane basis (u,v)
-    function projectTo2D(points3D, origin, u, v){
-      return points3D.map(p => {
-        const x = sub(p, origin);   // shift to centroid
-        return [
-          dot(x, u),   // coordinate along u
-          dot(x, v)    // coordinate along v
-        ];
-      });
-    }
-
-    // Project flap points to 2D plane coords
-    const flap2D = projectTo2D(flap, flapMean, u, v);
-
-    // Convex hull in 2D -> ordered indices
-    const hull = convexHull2D(flap2D); // array of {p,i} CCW
-    const hullIdx = hull.map(h=>h.i);
-    const orderedFlapPts = hullIdx.map(i=>flap[i]);
-    const orderedFlap2D = hull.map(h=>h.p);
-
-    // Flap area
-    const areaFlap = polygonArea2D(orderedFlap2D);
-
-    // Angle between tip->centroid and plane (arcsin(|dot(vec_norm, normal_norm)|))
-    const vec = sub(flapMean, tip);
-    const vecNorm = unit(vec);
-    const normalNorm = unit(normal);
-    const angleRad = Math.asin(Math.abs(dot(vecNorm, normalNorm)));
-    const angleDeg = angleRad * 180/Math.PI;
-
-    // Depth: |dot(tip - mean, normal)|
-    const depthMm = norm(sub(flapMean, tip));
-
-    // Corridor volume (mm^3): pyramid volume = (Area * height) / 3
-    const volumeMm3 = (areaFlap * depthMm) / 3.0;
-
-    // Solid angle
-    const omegaSr = polygonSolidAngle(orderedFlapPts, tip);
-    const omegaPct = 100.0 * omegaSr / (4.0 * Math.PI);
-
-    // AdIdx
-    const sinTheta = Math.sin(angleRad);
-    const adIdx =   (areaFlap * sinTheta) / (areaFlap * sinTheta + depthMm*depthMm); //(depthMm <= 1e-9) ? NaN : (areaFlap * sinTheta) / (depthMm*depthMm);
-
-    // Update results
-    document.getElementById("resArea").textContent = `${fmt(areaFlap,2)} mm²`;
-    document.getElementById("resAngle").textContent = `${fmt(angleDeg,2)} °`;
-    document.getElementById("resDepth").textContent = `${fmt(depthMm,2)} mm`;
-    document.getElementById("resVol").textContent = `${fmt(volumeMm3,2)} mm³`;
-    document.getElementById("resOmega").textContent = `${fmt(omegaSr,6)} sr`;
-    document.getElementById("resOmegaPct").textContent = `${fmt(omegaPct,3)} %`;
-    document.getElementById("resAdIdx").textContent = `${fmt(adIdx,6)}`;
-
-    setResultsVisible(true);
-
-    // Plotly 3D visualization
-    drawPlot({ flap, tip, flapMean, orderedFlapPts, normalNorm, areaFlap, depthMm, angleDeg, omegaSr, omegaPct, adIdx, volumeMm3 });
+    showError(""); const data=getInputs(); const err=validate(data); if(err){ setResultsVisible(false); showError(err); return; }
+    const {tip,flap}=data; const {mean:flapMean,normal,u,v}=pcaPlane(flap);
+    const projectTo2D=points3D=>points3D.map(p=>{ const x=sub(p,flapMean); return [dot(x,u),dot(x,v)]; });
+    const flap2D=projectTo2D(flap); const hull=convexHull2D(flap2D); const hullIdx=hull.map(h=>h.i); const orderedFlapPts=hullIdx.map(i=>flap[i]); const orderedFlap2D=hull.map(h=>h.p);
+    const areaFlap=polygonArea2D(orderedFlap2D); const vec=sub(flapMean,tip); const angleRad=Math.asin(Math.abs(dot(unit(vec),unit(normal)))); const angleDeg=angleRad*180/Math.PI;
+    const depthMm=norm(sub(flapMean,tip)); const volumeMm3=(areaFlap*depthMm)/3; const omegaSr=polygonSolidAngle(orderedFlapPts,tip); const omegaPct=100*omegaSr/(4*Math.PI);
+    const adIdx=(areaFlap*Math.sin(angleRad))/(areaFlap*Math.sin(angleRad)+depthMm*depthMm);
+    resArea.textContent=`${fmt(areaFlap,2)} mm²`; resAngle.textContent=`${fmt(angleDeg,2)} °`; resDepth.textContent=`${fmt(depthMm,2)} mm`; resVol.textContent=`${fmt(volumeMm3,2)} mm³`; resOmega.textContent=`${fmt(omegaSr,6)} sr`; resOmegaPct.textContent=`${fmt(omegaPct,3)} %`; resAdIdx.textContent=`${fmt(adIdx,6)}`;
+    setResultsVisible(true); showPlot(); drawPlot({flap,tip,flapMean,orderedFlapPts,areaFlap,depthMm,angleDeg,omegaSr,omegaPct,adIdx,volumeMm3});
   }
 
-  function drawPlot({ flap, tip, flapMean, orderedFlapPts, normalNorm, areaFlap, depthMm, angleDeg, omegaSr, omegaPct, adIdx, volumeMm3 }){
-    const allPts = flap.concat([tip]);
-
-    const xs = allPts.map(p=>p[0]);
-    const ys = allPts.map(p=>p[1]);
-    const zs = allPts.map(p=>p[2]);
-
-    const flapX = flap.map(p=>p[0]), flapY = flap.map(p=>p[1]), flapZ = flap.map(p=>p[2]);
-
-    // hull polygon loop
-    const poly = orderedFlapPts.concat([orderedFlapPts[0]]);
-    const polyX = poly.map(p=>p[0]), polyY = poly.map(p=>p[1]), polyZ = poly.map(p=>p[2]);
-
-    // tip->centroid line
-    const lineX = [tip[0], flapMean[0]];
-    const lineY = [tip[1], flapMean[1]];
-    const lineZ = [tip[2], flapMean[2]];
-
-    // rays to hull vertices
-    const rays = [];
-    for (const p of orderedFlapPts){
-      rays.push({
-        type: "scatter3d",
-        mode: "lines",
-        x: [tip[0], p[0]],
-        y: [tip[1], p[1]],
-        z: [tip[2], p[2]],
-        line: { width: 2 },
-        opacity: 0.35,
-        name: "rays",
-        showlegend: false
-      });
-    }
-
-    const traces = [
-      {
-        type: "scatter3d",
-        mode: "markers",
-        x: flapX, y: flapY, z: flapZ,
-        marker: { size: 5 },
-        name: "Flap vertices"
-      },
-      {
-        type: "scatter3d",
-        mode: "markers",
-        x: [tip[0]], y: [tip[1]], z: [tip[2]],
-        marker: { size: 7 },
-        name: "Tip"
-      },
-      {
-        type: "scatter3d",
-        mode: "markers",
-        x: [flapMean[0]], y: [flapMean[1]], z: [flapMean[2]],
-        marker: { size: 7 },
-        name: "Flap centroid"
-      },
-      {
-        type: "scatter3d",
-        mode: "lines",
-        x: polyX, y: polyY, z: polyZ,
-        line: { width: 5 },
-        name: "Flap hull (CCW)"
-      },
-      {
-        type: "scatter3d",
-        mode: "lines",
-        x: lineX, y: lineY, z: lineZ,
-        line: { width: 6 },
-        name: "Tip → centroid"
-      },
+  function drawPlot({flap,tip,flapMean,orderedFlapPts,areaFlap,depthMm,angleDeg,omegaSr,omegaPct,adIdx,volumeMm3}){
+    const poly=orderedFlapPts.concat([orderedFlapPts[0]]);
+    const rays=orderedFlapPts.map(p=>({type:"scatter3d",mode:"lines",x:[tip[0],p[0]],y:[tip[1],p[1]],z:[tip[2],p[2]],line:{width:2},opacity:0.35,name:"rays",showlegend:false}));
+    const traces=[
+      {type:"scatter3d",mode:"markers",x:flap.map(p=>p[0]),y:flap.map(p=>p[1]),z:flap.map(p=>p[2]),marker:{size:5},name:"Flap vertices"},
+      {type:"scatter3d",mode:"markers",x:[tip[0]],y:[tip[1]],z:[tip[2]],marker:{size:7},name:"Tip"},
+      {type:"scatter3d",mode:"markers",x:[flapMean[0]],y:[flapMean[1]],z:[flapMean[2]],marker:{size:7},name:"Flap centroid"},
+      {type:"scatter3d",mode:"lines",x:poly.map(p=>p[0]),y:poly.map(p=>p[1]),z:poly.map(p=>p[2]),line:{width:5},name:"Flap hull"},
+      {type:"scatter3d",mode:"lines",x:[tip[0],flapMean[0]],y:[tip[1],flapMean[1]],z:[tip[2],flapMean[2]],line:{width:6},name:"Tip → centroid"},
       ...rays
     ];
-
-    const layout = {
-      margin: { l: 0, r: 0, t: 30, b: 0 },
-      paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: "rgba(0,0,0,0)",
-      scene: {
-        xaxis: { title: "X (mm)", showbackground: true, backgroundcolor: "rgba(255,255,255,0.02)" },
-        yaxis: { title: "Y (mm)", showbackground: true, backgroundcolor: "rgba(255,255,255,0.02)" },
-        zaxis: { title: "Z (mm)", showbackground: true, backgroundcolor: "rgba(255,255,255,0.02)" },
-        aspectmode: "data"
-      },
-      showlegend: true,
-      legend: { bgcolor: "rgba(0,0,0,0.25)", bordercolor: "rgba(255,255,255,0.10)", borderwidth: 1 }
-    };
-
-    Plotly.newPlot("plot", traces, layout, { displayModeBar: true, responsive: true });
-
-    document.getElementById("plotCaption").textContent = `A=${fmt(areaFlap,1)} mm² • d=${fmt(depthMm,1)} mm • V=${fmt(volumeMm3,1)} mm³ • θ=${fmt(angleDeg,1)}° • Ω=${fmt(omegaSr,4)} sr • AdIdx=${fmt(adIdx,3)}`;
+    const layout={margin:{l:0,r:0,t:30,b:0},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",scene:{xaxis:{title:"X (mm)"},yaxis:{title:"Y (mm)"},zaxis:{title:"Z (mm)"},aspectmode:"data"},showlegend:true,legend:{bgcolor:"rgba(0,0,0,0.25)",bordercolor:"rgba(255,255,255,0.10)",borderwidth:1}};
+    Plotly.newPlot("plot",traces,layout,{displayModeBar:true,responsive:true});
+    plotCaption.textContent=`A=${fmt(areaFlap,1)} mm² • d=${fmt(depthMm,1)} mm • V=${fmt(volumeMm3,1)} mm³ • θ=${fmt(angleDeg,1)}° • Ω=${fmt(omegaSr,4)} sr • AdIdx=${fmt(adIdx,3)}`;
   }
 
-  // Buttons
-  document.getElementById("addVertex").onclick = () => addVertexRow();
-  document.getElementById("calcBtn").onclick = () => {
-    try {
-      compute();
-    } catch (e) {
-      console.error(e);
-      showError(String(e?.stack || e));
-      setResultsVisible(false);
-    }
-  };
-  document.getElementById("clearBtn").onclick = () => {
-    showError("");
-    setResultsVisible(false);
-    verticesDiv.innerHTML = "";
-    addVertexRow(); addVertexRow(); addVertexRow();
-    document.getElementById("tipX").value = "";
-    document.getElementById("tipY").value = "";
-    document.getElementById("tipZ").value = "";
-    Plotly.purge("plot");
-    document.getElementById("plotCaption").textContent = "";
-  };
+  function showPlot(){ dicomCanvas.style.display="none"; plot.style.display="block"; }
+  function showDicom(){ plot.style.display="none"; dicomCanvas.style.display="block"; }
 
-  function loadPatient2(){
-    // Patient 2 from your snippet
-    const flap = [
-      [82.42, 120.54, 136.98],
-      [70.65, 155.01, 163.89],
-      [94.27, 125.95, 195.56]
-    ];
-    const tip = [133.60, 122.38, 133.76];
+  addVertex.onclick=()=>addVertexRow();
+  calcBtn.onclick=()=>{ try{ compute(); } catch(e){ console.error(e); showError(String(e?.stack||e)); setResultsVisible(false); } };
+  clearBtn.onclick=()=>{ showError(""); setResultsVisible(false); verticesDiv.innerHTML=""; addVertexRow(); addVertexRow(); addVertexRow(); tipX.value=""; tipY.value=""; tipZ.value=""; Plotly.purge("plot"); plotCaption.textContent=""; };
+  loadP2.onclick=()=>{ const flap=[[82.42,120.54,136.98],[70.65,155.01,163.89],[94.27,125.95,195.56]], tip=[133.60,122.38,133.76]; verticesDiv.innerHTML=""; flap.forEach(p=>addVertexRow(p[0],p[1],p[2])); [tipX.value,tipY.value,tipZ.value]=tip; compute(); };
 
-    verticesDiv.innerHTML = "";
-    for (const p of flap) addVertexRow(p[0], p[1], p[2]);
+  document.querySelectorAll(".tabBtn").forEach(btn=>btn.onclick=()=>{
+    document.querySelectorAll(".tabBtn").forEach(b=>b.classList.remove("active")); document.querySelectorAll(".tabPanel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active"); document.getElementById(btn.dataset.tab).classList.add("active");
+    if(btn.dataset.tab==="dicomPanel" && dicomSeries.length) renderCurrentSlice(); else if(btn.dataset.tab==="manualPanel") showPlot();
+  });
 
-    document.getElementById("tipX").value = tip[0];
-    document.getElementById("tipY").value = tip[1];
-    document.getElementById("tipZ").value = tip[2];
+  // -----------------------------
+  // DICOM upload + point selection
+  // -----------------------------
+  let dicomSeries=[];
+  let currentSliceIndex=0;
+  let currentMode="tip";
+  let selectedTip=null;
+  let selectedFlap=[];
 
+  modeTip.onclick=()=>{ currentMode="tip"; modeTip.classList.add("activeMode"); modeFlap.classList.remove("activeMode"); };
+  modeFlap.onclick=()=>{ currentMode="flap"; modeFlap.classList.add("activeMode"); modeTip.classList.remove("activeMode"); };
+  clearDicomPoints.onclick=()=>{ selectedTip=null; selectedFlap=[]; updateDicomPointList(); renderCurrentSlice(); };
+  sendDicomPoints.onclick=()=>{
+    if(!selectedTip){ showError("Select a DICOM tip point first."); return; }
+    if(selectedFlap.length<3){ showError("Select at least 3 DICOM flap vertices."); return; }
+    tipX.value=selectedTip.patient[0]; tipY.value=selectedTip.patient[1]; tipZ.value=selectedTip.patient[2];
+    verticesDiv.innerHTML=""; selectedFlap.forEach(p=>addVertexRow(p.patient[0],p.patient[1],p.patient[2]));
+    document.querySelector('[data-tab="manualPanel"]').click();
     compute();
+  };
+
+  dicomFolder.onchange=async e=>{
+    showError(""); dicomSeries=[]; selectedTip=null; selectedFlap=[]; updateDicomPointList();
+    const files=Array.from(e.target.files||[]);
+    dicomStatus.innerHTML=`Reading ${files.length} file(s)...`;
+    const parsed=[];
+    for(const file of files){
+      try{
+        const ab=await file.arrayBuffer();
+        const byteArray=new Uint8Array(ab);
+        const dataSet=dicomParser.parseDicom(byteArray);
+        const img=parseDicomImage(dataSet,byteArray,file.name);
+        if(img) parsed.push(img);
+      } catch(err) {
+        // Ignore non-DICOM or compressed/unsupported files in the folder.
+      }
+    }
+    if(!parsed.length){ dicomStatus.innerHTML='<span class="warn">No readable uncompressed grayscale DICOM slices found.</span>'; sliceInfo.textContent="No DICOM loaded."; sliceSlider.disabled=true; return; }
+    parsed.sort((a,b)=>a.sortPosition-b.sortPosition);
+    dicomSeries=parsed; currentSliceIndex=0; sliceSlider.min=0; sliceSlider.max=dicomSeries.length-1; sliceSlider.value=0; sliceSlider.disabled=false;
+    dicomStatus.innerHTML=`<span class="ok">Loaded ${dicomSeries.length} slice(s).</span><br><span class="small">Series: ${dicomSeries[0].seriesDescription || "—"}</span>`;
+    renderCurrentSlice();
+  };
+  sliceSlider.oninput=()=>{ currentSliceIndex=parseInt(sliceSlider.value,10)||0; renderCurrentSlice(); };
+
+  function tagString(ds,tag){ try{return ds.string(tag)||"";}catch(e){return "";} }
+  function tagNumber(ds,tag,idx=0){ try{return ds.floatString(tag,idx);}catch(e){ const s=tagString(ds,tag); const parts=s.split('\\').map(Number); return parts[idx]; } }
+  function parseMulti(ds,tag,n){ const out=[]; for(let i=0;i<n;i++) out.push(tagNumber(ds,tag,i)); return out; }
+
+  function parseDicomImage(ds,byteArray,name){
+    const rows=ds.uint16("x00280010"), cols=ds.uint16("x00280011");
+    const bits=ds.uint16("x00280100"), pixelRep=ds.uint16("x00280103")||0;
+    const photometric=tagString(ds,"x00280004") || "MONOCHROME2";
+    const slope=Number(tagString(ds,"x00281053")||1), intercept=Number(tagString(ds,"x00281052")||0);
+    const wc=Number(tagString(ds,"x00281050") || NaN), ww=Number(tagString(ds,"x00281051") || NaN);
+    const position=parseMulti(ds,"x00200032",3);
+    const orientation=parseMulti(ds,"x00200037",6);
+    const spacing=parseMulti(ds,"x00280030",2);
+    const instance=Number(tagString(ds,"x00200013")||0);
+    const seriesDescription=tagString(ds,"x0008103e");
+    if(!rows || !cols) return null;
+    if(![8,16].includes(bits)) return null;
+    if(position.some(v=>!isFinite(v)) || orientation.some(v=>!isFinite(v)) || spacing.some(v=>!isFinite(v))) return null;
+    const elem=ds.elements.x7fe00010; if(!elem) return null;
+    const count=rows*cols;
+    let pixels;
+    if(bits===16){
+      const offset=elem.dataOffset; const dv=new DataView(byteArray.buffer, byteArray.byteOffset+offset, count*2);
+      pixels=new Float32Array(count); for(let i=0;i<count;i++){ const raw=pixelRep?dv.getInt16(i*2,true):dv.getUint16(i*2,true); pixels[i]=raw*slope+intercept; }
+    } else {
+      pixels=new Float32Array(count); for(let i=0;i<count;i++) pixels[i]=byteArray[elem.dataOffset+i]*slope+intercept;
+    }
+    const rowCos=orientation.slice(0,3), colCos=orientation.slice(3,6), normal=cross(rowCos,colCos);
+    const sortPosition=isFinite(dot(position,normal)) ? dot(position,normal) : instance;
+    return {name,rows,cols,pixels,photometric,wc,ww,position,orientation,spacing,rowCos,colCos,normal,sortPosition,seriesDescription};
   }
 
-  document.getElementById("loadP2").onclick = loadPatient2;
+  function pixelToPatient(img,row,col){
+    // DICOM mapping: P = ImagePositionPatient + row*rowSpacing*rowDirection + col*colSpacing*colDirection
+    const rowSpacing=img.spacing[0], colSpacing=img.spacing[1];
+    return [
+      img.position[0] + col*colSpacing*img.rowCos[0] + row*rowSpacing*img.colCos[0],
+      img.position[1] + col*colSpacing*img.rowCos[1] + row*rowSpacing*img.colCos[1],
+      img.position[2] + col*colSpacing*img.rowCos[2] + row*rowSpacing*img.colCos[2]
+    ];
+  }
 
-  // Initial state: 3 empty vertices + load sample to show instantly
+  function renderCurrentSlice(){
+    if(!dicomSeries.length) return;
+    showDicom();
+    const img=dicomSeries[currentSliceIndex];
+    const canvas=dicomCanvas; const ctx=canvas.getContext("2d");
+    canvas.width=img.cols; canvas.height=img.rows;
+    const imageData=ctx.createImageData(img.cols,img.rows);
+    let center=img.wc, width=img.ww;
+    if(!isFinite(center) || !isFinite(width) || width<=0){
+      let min=Infinity,max=-Infinity; for(const v of img.pixels){ if(v<min) min=v; if(v>max) max=v; }
+      center=(min+max)/2; width=(max-min)||1;
+    }
+    for(let i=0;i<img.pixels.length;i++){
+      let val=((img.pixels[i]-(center-0.5))/(width-1)+0.5)*255;
+      val=Math.max(0,Math.min(255,val)); if(img.photometric==="MONOCHROME1") val=255-val;
+      imageData.data[i*4]=val; imageData.data[i*4+1]=val; imageData.data[i*4+2]=val; imageData.data[i*4+3]=255;
+    }
+    ctx.putImageData(imageData,0,0);
+    drawPointOverlays(ctx,img);
+    sliceInfo.textContent=`Slice ${currentSliceIndex+1}/${dicomSeries.length} • ${img.rows}×${img.cols} • ${img.name}`;
+    dicomStatus.innerHTML=`<span class="ok">Loaded ${dicomSeries.length} slice(s).</span><br><span class="small">Current slice position: ${fmt(img.sortPosition,2)} mm</span>`;
+  }
+
+  function drawPointOverlays(ctx,img){
+    const pts=[]; if(selectedTip && selectedTip.sliceIndex===currentSliceIndex) pts.push({...selectedTip,label:"T"}); selectedFlap.forEach((p,i)=>{ if(p.sliceIndex===currentSliceIndex) pts.push({...p,label:String(i+1)}); });
+    ctx.save(); ctx.font="16px system-ui"; ctx.lineWidth=2;
+    for(const p of pts){
+      ctx.beginPath(); ctx.arc(p.col,p.row,6,0,2*Math.PI); ctx.strokeStyle=p.label==="T"?"#fb7185":"#7dd3fc"; ctx.stroke();
+      ctx.fillStyle=p.label==="T"?"#fb7185":"#7dd3fc"; ctx.fillText(p.label,p.col+8,p.row-8);
+    }
+    ctx.restore();
+  }
+
+  dicomCanvas.addEventListener("click", e=>{
+    if(!dicomSeries.length) return;
+    const rect=dicomCanvas.getBoundingClientRect();
+    const scaleX=dicomCanvas.width/rect.width, scaleY=dicomCanvas.height/rect.height;
+    const col=(e.clientX-rect.left)*scaleX, row=(e.clientY-rect.top)*scaleY;
+    const img=dicomSeries[currentSliceIndex];
+    const patient=pixelToPatient(img,row,col);
+    const point={sliceIndex:currentSliceIndex,row,col,patient};
+    if(currentMode==="tip") selectedTip=point; else selectedFlap.push(point);
+    updateDicomPointList(); renderCurrentSlice();
+  });
+
+  function updateDicomPointList(){
+    if(!selectedTip && selectedFlap.length===0){ dicomPointList.textContent="No points selected."; return; }
+    const lines=[];
+    if(selectedTip) lines.push(`Tip: [${selectedTip.patient.map(v=>fmt(v,2)).join(", ")}] mm`);
+    selectedFlap.forEach((p,i)=>lines.push(`F${i+1}: [${p.patient.map(v=>fmt(v,2)).join(", ")}] mm`));
+    dicomPointList.innerHTML=lines.map(l=>`<div>${l}</div>`).join("");
+  }
+
   addVertexRow(); addVertexRow(); addVertexRow();
-  loadPatient2();
+  loadP2.click();
 </script>
 </body>
 </html>
